@@ -38,7 +38,3 @@ install_github("gathanei/xyz")
 ### reference
 
 [xyz-paper](https://arxiv.org/abs/1610.05108)
-
-### License
-
-This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details
