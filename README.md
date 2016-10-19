@@ -35,8 +35,6 @@ library(devtools)
 install_github("gathanei/xyz")
 ```
 
-End with an example of getting some data out of the system or using it for a little demo
-
 ### reference
 
 [xyz-paper](https://arxiv.org/abs/1610.05108)
