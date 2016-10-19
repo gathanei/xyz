@@ -1,0 +1,83 @@
+---
+title: "The 'xyz' Algorithm for Fast Interaction Search in High-Dimensional Data"
+author: "Gian-Andrea Thanei, Nicolai Meinshausen and Rajen D. Shah"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Vignette Title}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+The `R`-Package xyz contains an algorithm to estimate product interactions between a response vector $Y$ and predictors $X$. For example if all data were binary in $\{-1,1\}$ one would like to find the pair $(l,k)$ maximizing:
+$$
+\begin{equation}
+\mathbb{P}(Y=X_l X_k).
+\end{equation}
+$$
+A brute force approach would cycle through all possible pairs, which implies a quadratic run-time if there are $p$ variables. The xyz-Algorithm provably solves this problem in sub-quadratic runt-ime. Its run-time depends on the interaction strength of the strongest pair. xyz can recover pairs in almost linerar run-time if the interaction is strong. 
+
+## Functions
+
+The xyz package offers two functions for interaction search:
+
+- `xyz_search`: If you want to search for the single pair that maximizes the probability
+$$
+\begin{equation}
+\mathbb{P}(Y=X_l X_k) \textrm{ or } |Y^T X_l X_k|
+\end{equation}
+$$
+you use the function `xyz_search(X,Y,L,N,binary,negative)`. The inputs are defined as: `X`: n x p design matrix. Can be either continuous or binary. `Y`: n dimensional response vector. Continuous or binary. `L`: number of projection steps. Run-time scales linear in `L`. `N`: number of closest pairs that will be returned. `binary`: set to true if `X` is binary. `negative`: set to true if you also want to consider interactions with a negative sign. 
+- `xyz_regression`: If you want to fit a regression model, of the form:
+$$
+\begin{equation}
+Y_i=\beta_0 + \sum_{l=1}^p \beta_l X_{il} + \sum_{l=1}^p \sum_{k \geq l}^p \theta_{lk} X_{il} X_{ik}.
+\end{equation}
+$$
+The elastic net estimator puts a penalty of the form 
+$$
+\begin{equation}
+\lambda (\alpha (\|\beta\|_1+\|\theta\|_1)+(1-\alpha)(\|\beta\|_2+\|\theta\|_2))
+\end{equation}
+$$
+on the parameter vectors. To fit such a model you use the function `xyz_regression(X,Y,lambdas,n_lambda,alpha,L)`. The inputs are defined as: `X`: n x p design matrix. Can be either continuous or binary. `Y`: n dimensional continuous response vector. `lambdas`: user defined path (not recommended). `n_lambda`: Number of lambdas on path. Either `n_lambda` or `lambdas` have to be set. `alpha` elastic net parameter. `L`: number of projection steps. Run-time scales linear in `L`.
+
+## Examples
+
+`xyz_search`:
+```{r, echo=FALSE}
+source('vignettecode.R')
+set.seed(1)
+```
+
+```{r, echo=TRUE}
+#set dimensions
+n<-100;p<-1000;
+#create data
+X<-matrix(2*rbinom(n*p,1,0.5)-1,n,p)
+Y<-X[,1]*X[,2]
+
+#find top 10 interactions
+result<-xyz_search(X,Y,L=5,N=10,binary=TRUE,negative=TRUE)
+#the first element contains the interaction pairs the second element contains their strength
+print(result)
+```
+These were now just `L=10` runs. This means we discovered the interaction in about $\mathcal{O}(np^{1.005})$ operations instead of $\mathcal{O}(np^2)$.
+
+`xyz_regression`:
+```{r, echo=TRUE,fig.show='hold',fig.width=6, fig.height=6}
+#set dimensions
+n<-100;p<-1000;
+#create data
+X<-matrix(rnorm(n*p),n,p)
+
+#build model
+Y<-3*X[,5]+2*X[,1]*X[,2]-3*X[,7]*X[,4]+rnorm(n)
+
+#find top 10 interactions
+result<-xyz_regression(X,Y,L=10,n_lambda=10,alpha=0.9)
+#the first element contains the main effects and the third the interaction effects, we look at the fifth lambda
+print(result)
+plot(result)
+#predict
+predict(result,matrix(rnorm(10*p),10,p))
+```
