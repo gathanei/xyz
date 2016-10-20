@@ -4,8 +4,8 @@ R package of the xyz algorithm for fast interaction search in high-dimensional d
 
 ## what is it?
 
-Finding interaction in high-dimensional data can be computationally very expensive. If the data set
-has p variables then naive searches incurs a quadratic cost in p.
+Finding interactions in high-dimensional data can be computationally very expensive. If the data set
+has p variables then naive search incurs a quadratic cost in p.
 
 The xyz algorithm finds strong interaction in almost linear time.
 
