@@ -74,6 +74,7 @@ IntegerVector sample_int_replace(NumericVector probabilities, int n) {
 
     int m = probabilities.size();
 
+
     IntegerVector alias(m);
 
     NumericVector probabilities1 = clone(probabilities);
@@ -82,6 +83,14 @@ IntegerVector sample_int_replace(NumericVector probabilities, int n) {
 
     probabilities1 = probabilities1*(m/avg);
 
+    if(var(probabilities1) < 0.01) {
+      IntegerVector results(n);
+      NumericVector temp = runif(n,-0.499,m-0.501);
+      for(int i = 0; i < n; ++i) {
+        results[i] = std::round(temp[i]);
+      }
+      return results;
+    }
 
     NumericVector probs(m);
 
