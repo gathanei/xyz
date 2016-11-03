@@ -8,7 +8,7 @@ The xyz package implements the [xyz](https://arxiv.org/abs/1610.05108) algorithm
 
 Given a data matrix \\( X \in \mathbb{R}^{n\times p} \\) and response vector \\( Y \in \mathbb{R}^n \\). As a simple example we want to fit the following model:
 
-$$Y_i = \beta_{jk} X_{ij}X_{ik}+\varepsilon_i$$
+$$Y_i = \beta_{jk} X_{ij}X_{ik}+\varepsilon_i.$$
 
 The problem is we don't know the exact interaction pair \\( (j,k) \\) . If we would loop through all possible pairs, we get a quadratic runtime \\(\mathcal{O}(np^2)\\). The xyz algorithm provably returns the correct interaction pair in subquadratic time, that is \\( \mathcal{O}(np^{\alpha}) \\) with \\( \alpha < 2 \\). More elaborate models can be considered, see package vignette for details.
 
@@ -22,7 +22,7 @@ install_github("gathanei/xyz")
 
 # How to use
 
-We generate the model \\( Y_i=2 X_{i1}X_{i2}+\varepsilon_i\\), where \\(X \in \{-1,1\}^{n \times p} \\) and \\( \varepsilon_i \\) is iid Gaussian noise.
+We generate the model \\( Y_i=2 X_{i1}X_{i2}+\varepsilon_i \\), where \\(X \in \\{-1,1\\}^{n \times p} \\) and \\( \varepsilon_i \\) is iid Gaussian noise.
 
 {% highlight R %}
 library(xyz)

@@ -36,32 +36,32 @@
 
 <p>Given a data matrix \( X \in \mathbb{R}^{n\times p} \) and response vector \( Y \in \mathbb{R}^n \). As a simple example we want to fit the following model:</p>
 
-<script type="math/tex; mode=display">Y_i = \beta_{jk} X_{ij}X_{ik}+\varepsilon_i</script>
+<script type="math/tex; mode=display">Y_i = \beta_{jk} X_{ij}X_{ik}+\varepsilon_i.</script>
 
-<p>The problem is we don’t know the exact interaction pair \( (j,k) \) . If we would loop through all possible pairs, we get a quadratic runtime \(\mathcal{O}(np^2)\). The xyz algorithm provably returns the correct interaction pair in subquadratic time, that is \( \mathcal{O}(np^{\alpha}) \) with \( \alpha &lt; 2 \).</p>
+<p>The problem is we don’t know the exact interaction pair \( (j,k) \) . If we would loop through all possible pairs, we get a quadratic runtime \(\mathcal{O}(np^2)\). The xyz algorithm provably returns the correct interaction pair in subquadratic time, that is \( \mathcal{O}(np^{\alpha}) \) with \( \alpha &lt; 2 \). More elaborate models can be considered, see package vignette for details.</p>
 
 <h1 id="how-to-install">How to install</h1>
 
 <p>You can install the package either by compiling it yourself or by using the devtools R library.</p>
 
-<div class="highlight"><pre><code class="language-r" data-lang="r">library(devtools)
-install_github(&quot;gathanei/xyz&quot;)</code></pre></div>
+<div class="highlight"><pre><code class="language-r" data-lang="r"><span class="kn">library</span><span class="p">(</span>devtools<span class="p">)</span>
+install_github<span class="p">(</span><span class="s">&quot;gathanei/xyz&quot;</span><span class="p">)</span></code></pre></div>
 
 <h1 id="how-to-use">How to use</h1>
 
-<p>We generate the above model.</p>
+<p>We generate the model \( Y_i=2 X<em>{i1}X</em>{i2}+\varepsilon_i \), where \(X \in \{-1,1\}^{n \times p} \) and \( \varepsilon_i \) is iid Gaussian noise.</p>
 
-<div class="highlight"><pre><code class="language-r" data-lang="r">library(xyz)
-n&lt;-300
-p&lt;-1000
-#construct a binary matrix
-X&lt;-matrix(sample(c(-1,1),replace=TRUE,n*p),n,p)
-#set an interaction of the pair (1,2)
-Y&lt;-X[,1]*X[,2]+rnorm(n)
-#run the interaction search
-result&lt;-xyz_search(X,Y,L=10,N=10,binary=TRUE,negative=TRUE)
-#print the result
-print(result)</code></pre></div>
+<div class="highlight"><pre><code class="language-r" data-lang="r"><span class="kn">library</span><span class="p">(</span>xyz<span class="p">)</span>
+n<span class="o">&lt;-</span><span class="m">300</span>
+p<span class="o">&lt;-</span><span class="m">1000</span>
+<span class="c1">#construct a binary matrix</span>
+X<span class="o">&lt;-</span><span class="kt">matrix</span><span class="p">(</span><span class="kp">sample</span><span class="p">(</span><span class="kt">c</span><span class="p">(</span><span class="m">-1</span><span class="p">,</span><span class="m">1</span><span class="p">),</span>replace<span class="o">=</span><span class="bp">T</span><span class="p">,</span>n<span class="o">*</span>p<span class="p">),</span>n<span class="p">,</span>p<span class="p">)</span>
+<span class="c1">#set an interaction of the pair (1,2)</span>
+Y<span class="o">&lt;-</span><span class="m">2</span><span class="o">*</span>X<span class="p">[,</span><span class="m">1</span><span class="p">]</span><span class="o">*</span>X<span class="p">[,</span><span class="m">2</span><span class="p">]</span><span class="o">+</span>rnorm<span class="p">(</span>n<span class="p">)</span>
+<span class="c1">#run the interaction search</span>
+result<span class="o">&lt;-</span>xyz_search<span class="p">(</span>X<span class="p">,</span>Y<span class="p">,</span>L<span class="o">=</span><span class="m">10</span><span class="p">,</span>N<span class="o">=</span><span class="m">10</span><span class="p">,</span>binary<span class="o">=</span><span class="bp">T</span><span class="p">,</span>negative<span class="o">=</span><span class="bp">T</span><span class="p">)</span>
+<span class="c1">#print the result</span>
+<span class="kp">print</span><span class="p">(</span>result<span class="p">)</span></code></pre></div>
 
 
       </section>
