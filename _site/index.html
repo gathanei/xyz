@@ -54,9 +54,9 @@ install_github<span class="p">(</span><span class="s">&quot;gathanei/xyz&quot;</
 <div class="highlight"><pre><code class="language-r" data-lang="r"><span class="kn">library</span><span class="p">(</span>xyz<span class="p">)</span>
 n<span class="o">&lt;-</span><span class="m">300</span>
 p<span class="o">&lt;-</span><span class="m">1000</span>
-<span class="c1">#construct a binary matrix</span>
+<span class="c1">#construct a data matrix X</span>
 X<span class="o">&lt;-</span><span class="kt">matrix</span><span class="p">(</span><span class="kp">sample</span><span class="p">(</span><span class="kt">c</span><span class="p">(</span><span class="m">-1</span><span class="p">,</span><span class="m">1</span><span class="p">),</span>replace<span class="o">=</span><span class="bp">T</span><span class="p">,</span>n<span class="o">*</span>p<span class="p">),</span>n<span class="p">,</span>p<span class="p">)</span>
-<span class="c1">#set an interaction of the pair (1,2)</span>
+<span class="c1">#interaction of the pair (1,2)</span>
 Y<span class="o">&lt;-</span><span class="m">2</span><span class="o">*</span>X<span class="p">[,</span><span class="m">1</span><span class="p">]</span><span class="o">*</span>X<span class="p">[,</span><span class="m">2</span><span class="p">]</span><span class="o">+</span>rnorm<span class="p">(</span>n<span class="p">)</span>
 <span class="c1">#run the interaction search</span>
 result<span class="o">&lt;-</span>xyz_search<span class="p">(</span>X<span class="p">,</span>Y<span class="p">,</span>L<span class="o">=</span><span class="m">10</span><span class="p">,</span>N<span class="o">=</span><span class="m">10</span><span class="p">,</span>binary<span class="o">=</span><span class="bp">T</span><span class="p">,</span>negative<span class="o">=</span><span class="bp">T</span><span class="p">)</span>

@@ -28,9 +28,9 @@ We generate the model \\( Y_i=2 X_{i1}X_{i2}+\varepsilon_i \\), where \\(X \in \
 library(xyz)
 n<-300
 p<-1000
-#construct a binary matrix
+#construct a data matrix X
 X<-matrix(sample(c(-1,1),replace=T,n*p),n,p)
-#set an interaction of the pair (1,2)
+#interaction of the pair (1,2)
 Y<-2*X[,1]*X[,2]+rnorm(n)
 #run the interaction search
 result<-xyz_search(X,Y,L=10,N=10,binary=T,negative=T)
