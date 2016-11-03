@@ -1,4 +1,4 @@
-highlighter: pygments
+highlighter: rouge
 github: [Repository metadata]
 baseurl: /xyz
 gems:
