@@ -1,0 +1,5 @@
+highlighter: pygments
+github: [Repository metadata]
+baseurl: /xyz
+gems:
+- jekyll-mentions
