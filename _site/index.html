@@ -18,7 +18,7 @@
   <body>
     <div class="wrapper">
       <header>
-        <h1>xyz</h1>
+        <h1>xyz, a R-package</h1>
         <p>A library for fast interaction search in high-dimensional data.</p>
 
         <p class="view"><a href="https://github.com/gathanei/xyz">View on GitHub <small>gathanei/xyz</small></a></p>
@@ -32,11 +32,37 @@
       <section>
         <p>The xyz package implements the <a href="https://arxiv.org/abs/1610.05108">xyz</a> algorithm for fast interaction search in high-dimensional data.</p>
 
-<h1 id="simple-problem">Simple problem</h1>
+<h1 id="a-simple-problem">A simple problem</h1>
 
-<p>Given a data matrix \( X \in \mathbb{R}^{n\times p} \) and response vector \( \mathbf{Y} \in \mathbb{R}^n \), we want to find strong product interaction. That is</p>
+<p>Given a data matrix \( X \in \mathbb{R}^{n\times p} \) and response vector \( Y \in \mathbb{R}^n \). As a simple example we want to fit the following model:</p>
 
-<script type="math/tex; mode=display">argmin_{(j,k) \in \{1,...,p\}^2} |\sum_{i=1}^n Y_i X_{ij}X_{ik}|</script>
+<script type="math/tex; mode=display">Y_i = \beta_{jk} X_{ij}X_{ik}+\varepsilon_i</script>
+
+<p>The problem is we don’t know the exact interaction pair \( (j,k) \) . If we would loop through all possible pairs, we get a quadratic runtime \(\mathcal{O}(np^2)\). The xyz algorithm provably returns the correct interaction pair in subquadratic time, that is \( \mathcal{O}(np^{\alpha}) \) with \( \alpha &lt; 2 \).</p>
+
+<h1 id="how-to-install">How to install</h1>
+
+<p>You can install the package either by compiling it yourself or by using the devtools R library.</p>
+
+<div class="highlight"><pre><code class="language-r" data-lang="r">library(devtools)
+install_github(&quot;gathanei/xyz&quot;)</code></pre></div>
+
+<h1 id="how-to-use">How to use</h1>
+
+<p>We generate the above model.</p>
+
+<div class="highlight"><pre><code class="language-r" data-lang="r">library(xyz)
+n&lt;-300
+p&lt;-1000
+#construct a binary matrix
+X&lt;-matrix(sample(c(-1,1),replace=TRUE,n*p),n,p)
+#set an interaction of the pair (1,2)
+Y&lt;-X[,1]*X[,2]+rnorm(n)
+#run the interaction search
+result&lt;-xyz_search(X,Y,L=10,N=10,binary=TRUE,negative=TRUE)
+#print the result
+print(result)</code></pre></div>
+
 
       </section>
       <footer>
