@@ -37,3 +37,11 @@ result<-xyz_search(X,Y,L=10,N=10,binary=T,negative=T)
 #print the result
 print(result)
 {% endhighlight %}
+
+For a practical verification of the subquadratic runtime see the plot below.
+
+{: .center}
+![asymptotic_runtime]({{ site.baseurl }}/assets/asymptotic_runtime.png)
+
+*It depicts three runs of xyz on a data set with different interaction strengths. Green is the weakest interaction
+and purple the strongest.*
