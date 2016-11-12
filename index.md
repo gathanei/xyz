@@ -14,7 +14,8 @@ The problem is we don't know the exact interaction pair \\( (j,k) \\) . If we wo
 
 # How to install
 
-You can install the package either by compiling it yourself or by using the devtools R library.
+You can either install the package directly from CRAN (using ```install.packages("xyz") ```) or you can get
+the most up to date version by installing from github:
 {% highlight R %}
 library(devtools)
 install_github("gathanei/xyz")
@@ -44,4 +45,10 @@ For a practical verification of the subquadratic runtime see the plot below.
 ![asymptotic_runtime]({{ site.baseurl }}/assets/asymptotic_runtime.png)
 
 *It depicts three runs of xyz on a data set with different interaction strengths. Green is the weakest interaction
-and purple the strongest.*
+and purple the strongest. Recorded is the time taking to discover the correct interaction.*
+
+The package also implements interaction search for high-dimensional regression (see the function `xyz_regression`).
+
+# References
+
+[The xyz algorithm for fast interaction search in high-dimensional data. (Gian-Andrea Thanei, Nicolai Meinshausen, Rajen D. Shah)](https://arxiv.org/abs/1610.05108)

@@ -42,7 +42,8 @@
 
 <h1 id="how-to-install">How to install</h1>
 
-<p>You can install the package either by compiling it yourself or by using the devtools R library.</p>
+<p>You can either install the package directly from CRAN (using <code>install.packages("xyz")</code>) or you can get
+the most up to date version by installing from github:</p>
 
 <div class="highlight"><pre><code class="language-r" data-lang="r"><span class="kn">library</span><span class="p">(</span>devtools<span class="p">)</span>
 install_github<span class="p">(</span><span class="s">&quot;gathanei/xyz&quot;</span><span class="p">)</span></code></pre></div>
@@ -68,7 +69,13 @@ result<span class="o">&lt;-</span>xyz_search<span class="p">(</span>X<span class
 <p class="center"><img src="/xyz/assets/asymptotic_runtime.png" alt="asymptotic_runtime" /></p>
 
 <p><em>It depicts three runs of xyz on a data set with different interaction strengths. Green is the weakest interaction
-and purple the strongest.</em></p>
+and purple the strongest. Recorded is the time taking to discover the correct interaction.</em></p>
+
+<p>The package also implements interaction search for high-dimensional regression (see the function <code>xyz_regression</code>).</p>
+
+<h1 id="references">References</h1>
+
+<p><a href="https://arxiv.org/abs/1610.05108">The xyz algorithm for fast interaction search in high-dimensional data. (Gian-Andrea Thanei, Nicolai Meinshausen, Rajen D. Shah)</a></p>
 
       </section>
       <footer>
