@@ -1,7 +1,7 @@
 Package: xyz
 Type: Package
 Title: The 'xyz' Algorithm for Fast Interaction Search in High-Dimensional Data
-Version: 0.1
+Version: 0.3
 Date: 2016-10-17
 Maintainer: Gian-Andrea Thanei <thanei@stat.math.ethz.ch>
 Author: Gian-Andrea Thanei

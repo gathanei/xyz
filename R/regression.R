@@ -262,11 +262,14 @@ plot.xyz_regression_result<-function(x,...) {
 #' @export
 predict.xyz_regression_result<-function(object,newdata,...) {
   l<-length(object[[1]])
-  main_effects<-c(object[[1]][[l]],1)
-  beta_main<-c(object[[2]][[l]],0)
-  intr_effects<-cbind(object[[3]][[l]],c(1,1))
-  beta_intr<-c(object[[4]][[l]],0)
-  intercept<-object[[6]][l]
-  Y_pred<-intercept+newdata[,main_effects]%*%beta_main+(newdata[,intr_effects[1,]]*newdata[,intr_effects[2,]])%*%beta_intr
-  return(Y_pred)
+  Y_pred_matrix<-matrix(0,dim(newdata)[1],l)
+  for(i in 1:l) {
+    main_effects<-c(object[[1]][[i]],1)
+    beta_main<-c(object[[2]][[i]],0)
+    intr_effects<-cbind(object[[3]][[i]],c(1,1))
+    beta_intr<-c(object[[4]][[i]],0)
+    intercept<-object[[6]][i]
+    Y_pred_matrix[,i]<-intercept+newdata[,main_effects]%*%beta_main+(newdata[,intr_effects[1,]]*newdata[,intr_effects[2,]])%*%beta_intr
+  }
+  return(Y_pred_matrix)
 }

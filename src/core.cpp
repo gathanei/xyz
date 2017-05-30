@@ -1,6 +1,6 @@
-//[[Rcpp::plugins(cpp11)]]
 #include <Rcpp.h>
 
+//[[Rcpp::plugins(cpp11)]]
 
 using namespace Rcpp;
 
@@ -12,6 +12,14 @@ bool cmp_double_smaller(paired_doubleint left, paired_doubleint right) {
 
 bool cmp_double_bigger(paired_doubleint left, paired_doubleint right) {
   return left.first > right.first;
+}
+
+int round_to_int(double x) {
+  int result = 0;
+  if(x > 0) x += 0.5;
+  if(x < 0) x -= 0.5;
+  result = (int)x;
+  return result;
 }
 
 /* order (ascending) function for IntegerVector */
@@ -62,7 +70,8 @@ IntegerVector sample_uniform(int range, int n) {
     if(n < 1)  stop("number of samples is zero or negative");
     NumericVector temp = runif(n,-0.499,range-0.501);
     IntegerVector results(n);
-    for (int i = 0; i < n; ++i) results[i] = std::round(temp[i]);
+
+    for (int i = 0; i < n; ++i) results[i] = round_to_int(temp[i]);
 
     return results;
 }
@@ -87,7 +96,7 @@ IntegerVector sample_int_replace(NumericVector probabilities, int n) {
       IntegerVector results(n);
       NumericVector temp = runif(n,-0.499,m-0.501);
       for(int i = 0; i < n; ++i) {
-        results[i] = std::round(temp[i]);
+        results[i] = round_to_int(temp[i]);
       }
       return results;
     }
@@ -145,7 +154,7 @@ IntegerVector sample_int_replace(NumericVector probabilities, int n) {
     NumericVector temp1 = runif(n,0,1);
     int col = 0;
     for (int i = 0; i < n; ++i) {
-        col = std::round(temp[i]);
+        col = round_to_int(temp[i]);
         if (temp1[i] < probs[col]) {
             results[i] = col;
         } else {
@@ -403,7 +412,15 @@ List find_strongest_pairs(List pairs, NumericMatrix X, NumericVector Y, int max_
       ++counter;
     }
   }
-  temp_pairs = clean_pairs(temp_pairs);
+  //fix for the bug that made (1,1) an intercation pair most of the time
+  IntegerMatrix tpairs(2,counter);
+
+  for(int i = 0; i < counter; ++i) {
+    tpairs(0,i) = temp_pairs(0,i);
+    tpairs(1,i) = temp_pairs(1,i);
+  }
+  temp_pairs = clean_pairs(tpairs);
+
   temp_strength = absolute_covariates_pairs(temp_pairs,X,Y);
   otemps = order_vector(temp_strength,true);
   sort_using_order_intmat(temp_pairs,otemps);
@@ -506,7 +523,8 @@ List projected_equal_pairs(IntegerMatrix X, NumericVector Y, int number_of_runs,
     if(s2 > 0.9) {Rcout << "s2=" << s2 <<" "; stop("background interaction strength seems to be unusually high");}
     if(s2 < 0.1) {Rcout << "s2=" << s2 <<" "; stop("background interaction strength seems to be unusually low");}
 
-    int size_of_subsample = std::round(-log(p)/log(s2));
+    float pp = p;
+    int size_of_subsample = round_to_int(-log(pp)/log(s2));
 
     if(size_of_subsample < 1) stop("calculated sub sample size is below 1");
     if(size_of_subsample > n) stop("calculated sub sample size is above n");
