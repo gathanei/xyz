@@ -5,40 +5,6 @@
 
 using namespace Rcpp;
 
-// order_vector
-IntegerVector order_vector(NumericVector x, bool decreasing);
-RcppExport SEXP xyz_order_vector(SEXP xSEXP, SEXP decreasingSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< NumericVector >::type x(xSEXP);
-    Rcpp::traits::input_parameter< bool >::type decreasing(decreasingSEXP);
-    rcpp_result_gen = Rcpp::wrap(order_vector(x, decreasing));
-    return rcpp_result_gen;
-END_RCPP
-}
-// sort_using_order_numvec
-void sort_using_order_numvec(NumericVector x, const IntegerVector& x_o);
-RcppExport SEXP xyz_sort_using_order_numvec(SEXP xSEXP, SEXP x_oSEXP) {
-BEGIN_RCPP
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< NumericVector >::type x(xSEXP);
-    Rcpp::traits::input_parameter< const IntegerVector& >::type x_o(x_oSEXP);
-    sort_using_order_numvec(x, x_o);
-    return R_NilValue;
-END_RCPP
-}
-// sort_using_order_intmat
-void sort_using_order_intmat(IntegerMatrix x, const IntegerVector x_o);
-RcppExport SEXP xyz_sort_using_order_intmat(SEXP xSEXP, SEXP x_oSEXP) {
-BEGIN_RCPP
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< IntegerMatrix >::type x(xSEXP);
-    Rcpp::traits::input_parameter< const IntegerVector >::type x_o(x_oSEXP);
-    sort_using_order_intmat(x, x_o);
-    return R_NilValue;
-END_RCPP
-}
 // sample_uniform
 IntegerVector sample_uniform(int range, int n);
 RcppExport SEXP xyz_sample_uniform(SEXP rangeSEXP, SEXP nSEXP) {
@@ -451,4 +417,41 @@ BEGIN_RCPP
     rcpp_result_gen = Rcpp::wrap(gaussiglmnet(X, Y, lambdas, alpha, standardize, max_main_effects, max_interaction_effects, max_outer, number_of_nnis_runs));
     return rcpp_result_gen;
 END_RCPP
+}
+
+static const R_CallMethodDef CallEntries[] = {
+    {"xyz_sample_uniform", (DL_FUNC) &xyz_sample_uniform, 2},
+    {"xyz_sample_int_replace", (DL_FUNC) &xyz_sample_int_replace, 2},
+    {"xyz_prod_matrix_vector", (DL_FUNC) &xyz_prod_matrix_vector, 2},
+    {"xyz_colsum_index", (DL_FUNC) &xyz_colsum_index, 2},
+    {"xyz_absolute_covariates", (DL_FUNC) &xyz_absolute_covariates, 2},
+    {"xyz_absolute_covariates_pairs", (DL_FUNC) &xyz_absolute_covariates_pairs, 3},
+    {"xyz_clean_pairs", (DL_FUNC) &xyz_clean_pairs, 1},
+    {"xyz_translate_to_binary", (DL_FUNC) &xyz_translate_to_binary, 2},
+    {"xyz_estimate_background_interaction_frequency", (DL_FUNC) &xyz_estimate_background_interaction_frequency, 3},
+    {"xyz_find_strongest_pairs", (DL_FUNC) &xyz_find_strongest_pairs, 4},
+    {"xyz_equalpairs", (DL_FUNC) &xyz_equalpairs, 5},
+    {"xyz_projected_equal_pairs", (DL_FUNC) &xyz_projected_equal_pairs, 5},
+    {"xyz_naive_interaction_search", (DL_FUNC) &xyz_naive_interaction_search, 3},
+    {"xyz_interaction_search", (DL_FUNC) &xyz_interaction_search, 6},
+    {"xyz_interaction_search_low_level", (DL_FUNC) &xyz_interaction_search_low_level, 5},
+    {"xyz_soft_threshold", (DL_FUNC) &xyz_soft_threshold, 4},
+    {"xyz_create_lambda_sequence", (DL_FUNC) &xyz_create_lambda_sequence, 3},
+    {"xyz_scan_main_effects", (DL_FUNC) &xyz_scan_main_effects, 10},
+    {"xyz_scale_intr", (DL_FUNC) &xyz_scale_intr, 3},
+    {"xyz_scan_intr_effects", (DL_FUNC) &xyz_scan_intr_effects, 12},
+    {"xyz_update_intr_final", (DL_FUNC) &xyz_update_intr_final, 2},
+    {"xyz_calculate_xbeta", (DL_FUNC) &xyz_calculate_xbeta, 9},
+    {"xyz_calculate_residuals", (DL_FUNC) &xyz_calculate_residuals, 9},
+    {"xyz_iterate", (DL_FUNC) &xyz_iterate, 14},
+    {"xyz_update_intr_vars", (DL_FUNC) &xyz_update_intr_vars, 4},
+    {"xyz_clean_all_effects", (DL_FUNC) &xyz_clean_all_effects, 5},
+    {"xyz_warm_start", (DL_FUNC) &xyz_warm_start, 5},
+    {"xyz_gaussiglmnet", (DL_FUNC) &xyz_gaussiglmnet, 9},
+    {NULL, NULL, 0}
+};
+
+RcppExport void R_init_xyz(DllInfo *dll) {
+    R_registerRoutines(dll, NULL, CallEntries, NULL, NULL);
+    R_useDynamicSymbols(dll, FALSE);
 }

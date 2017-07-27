@@ -1,20 +1,21 @@
 #include <Rcpp.h>
-
+#include <numeric>
+#include <utility>
 //[[Rcpp::plugins(cpp11)]]
 
 using namespace Rcpp;
 
 typedef std::pair<double, int> paired_doubleint;
 
-bool cmp_double_smaller(paired_doubleint left, paired_doubleint right) {
+inline bool cmp_double_smaller(paired_doubleint left, paired_doubleint right) {
   return left.first < right.first;
 }
 
-bool cmp_double_bigger(paired_doubleint left, paired_doubleint right) {
+inline bool cmp_double_bigger(paired_doubleint left, paired_doubleint right) {
   return left.first > right.first;
 }
 
-int round_to_int(double x) {
+inline int round_to_int(double x) {
   int result = 0;
   if(x > 0) x += 0.5;
   if(x < 0) x -= 0.5;
@@ -23,51 +24,38 @@ int round_to_int(double x) {
 }
 
 /* order (ascending) function for IntegerVector */
-//[[Rcpp::export]]
-IntegerVector order_vector(NumericVector x, bool decreasing) {
-    int n = x.size();
-    std::vector<paired_doubleint> pairs;
-    pairs.reserve(n);
+inline IntegerVector order_vector(NumericVector x, bool decreasing) {
+  IntegerVector result(x.size());
+  std::iota(result.begin(), result.end(), 0);
+  if(decreasing){
+    auto comparator = [&x](int a, int b){ return x[a] > x[b]; };
+    std::sort(result.begin(), result.end(), comparator);
+  } else{
+    auto comparator = [&x](int a, int b){ return x[a] < x[b]; };
+    std::sort(result.begin(), result.end(), comparator);
+  }
 
-    for(int i = 0; i < n; ++i) pairs.push_back(std::make_pair(x[i], i));
-
-    if (decreasing) {
-      std::sort(pairs.begin(), pairs.end(), cmp_double_bigger);
-    } else {
-      std::sort(pairs.begin(), pairs.end(), cmp_double_smaller);
-    }
-    IntegerVector result(n);
-
-    for(int i = 0; i < n; ++i) result[i] = pairs[i].second;
-
-    return result;
-}
-
-/* sort NumericVector using an already computed order */
-//[[Rcpp::export]]
-void sort_using_order_numvec(NumericVector x, const IntegerVector& x_o) {
-    NumericVector temp(x.size());
-    for(int i = 0; i < x.size(); ++i) temp[i] = x[x_o[i]];
-
-    for(int i = 0; i < x.size(); ++i) x[i] = temp[i];
+  return result;
 }
 
 /* sort PairMatrix using an already computed order */
-//[[Rcpp::export]]
-void sort_using_order_intmat(IntegerMatrix x, const IntegerVector x_o) {
-    IntegerMatrix temp(2,x.ncol());
-    for(int i = 0; i < x.ncol(); ++i) { temp(0,i) = x(0,x_o[i]); temp(1,i) = x(1,x_o[i]); }
-
-    for(int i = 0; i < x.ncol(); ++i) { x(0,i) = temp(0,i); x(1,i) = temp(1,i); }
+inline void sort_using_order_intmat(IntegerMatrix &x, const IntegerVector &x_o) {
+  // Consider using std::swap as in https://stackoverflow.com/a/838789/5861244
+  for(int i = 0; i < x.nrow(); ++i){
+    IntegerVector temp = x(i, _);
+    auto x_o_it = x_o.begin();
+    for(int j = 0; j < x.ncol(); ++j, ++x_o_it)
+      x(i, j) = temp[*x_o_it];
+  }
 }
-
-
 
 //[[Rcpp::export]]
 IntegerVector sample_uniform(int range, int n) {
-    if(range < 1)  stop("range is zero or negative");
+    if(range < 1)
+      stop("range is zero or negative");
 
-    if(n < 1)  stop("number of samples is zero or negative");
+    if(n < 1)
+      stop("number of samples is zero or negative");
     NumericVector temp = runif(n,-0.499,range-0.501);
     IntegerVector results(n);
 
