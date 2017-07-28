@@ -5,18 +5,6 @@
 
 using namespace Rcpp;
 
-// sample_uniform
-IntegerVector sample_uniform(int range, int n);
-RcppExport SEXP xyz_sample_uniform(SEXP rangeSEXP, SEXP nSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< int >::type range(rangeSEXP);
-    Rcpp::traits::input_parameter< int >::type n(nSEXP);
-    rcpp_result_gen = Rcpp::wrap(sample_uniform(range, n));
-    return rcpp_result_gen;
-END_RCPP
-}
 // sample_int_replace
 IntegerVector sample_int_replace(NumericVector probabilities, int n);
 RcppExport SEXP xyz_sample_int_replace(SEXP probabilitiesSEXP, SEXP nSEXP) {
@@ -26,66 +14,6 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< NumericVector >::type probabilities(probabilitiesSEXP);
     Rcpp::traits::input_parameter< int >::type n(nSEXP);
     rcpp_result_gen = Rcpp::wrap(sample_int_replace(probabilities, n));
-    return rcpp_result_gen;
-END_RCPP
-}
-// prod_matrix_vector
-NumericMatrix prod_matrix_vector(IntegerMatrix X, NumericVector r);
-RcppExport SEXP xyz_prod_matrix_vector(SEXP XSEXP, SEXP rSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< IntegerMatrix >::type X(XSEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type r(rSEXP);
-    rcpp_result_gen = Rcpp::wrap(prod_matrix_vector(X, r));
-    return rcpp_result_gen;
-END_RCPP
-}
-// colsum_index
-NumericVector colsum_index(NumericMatrix X, IntegerVector indexes);
-RcppExport SEXP xyz_colsum_index(SEXP XSEXP, SEXP indexesSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< NumericMatrix >::type X(XSEXP);
-    Rcpp::traits::input_parameter< IntegerVector >::type indexes(indexesSEXP);
-    rcpp_result_gen = Rcpp::wrap(colsum_index(X, indexes));
-    return rcpp_result_gen;
-END_RCPP
-}
-// absolute_covariates
-NumericVector absolute_covariates(NumericMatrix X, NumericVector Y);
-RcppExport SEXP xyz_absolute_covariates(SEXP XSEXP, SEXP YSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< NumericMatrix >::type X(XSEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type Y(YSEXP);
-    rcpp_result_gen = Rcpp::wrap(absolute_covariates(X, Y));
-    return rcpp_result_gen;
-END_RCPP
-}
-// absolute_covariates_pairs
-NumericVector absolute_covariates_pairs(IntegerMatrix pairs, NumericMatrix X, NumericVector Y);
-RcppExport SEXP xyz_absolute_covariates_pairs(SEXP pairsSEXP, SEXP XSEXP, SEXP YSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< IntegerMatrix >::type pairs(pairsSEXP);
-    Rcpp::traits::input_parameter< NumericMatrix >::type X(XSEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type Y(YSEXP);
-    rcpp_result_gen = Rcpp::wrap(absolute_covariates_pairs(pairs, X, Y));
-    return rcpp_result_gen;
-END_RCPP
-}
-// clean_pairs
-IntegerMatrix clean_pairs(IntegerMatrix pairs);
-RcppExport SEXP xyz_clean_pairs(SEXP pairsSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< IntegerMatrix >::type pairs(pairsSEXP);
-    rcpp_result_gen = Rcpp::wrap(clean_pairs(pairs));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -420,13 +348,7 @@ END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
-    {"xyz_sample_uniform", (DL_FUNC) &xyz_sample_uniform, 2},
     {"xyz_sample_int_replace", (DL_FUNC) &xyz_sample_int_replace, 2},
-    {"xyz_prod_matrix_vector", (DL_FUNC) &xyz_prod_matrix_vector, 2},
-    {"xyz_colsum_index", (DL_FUNC) &xyz_colsum_index, 2},
-    {"xyz_absolute_covariates", (DL_FUNC) &xyz_absolute_covariates, 2},
-    {"xyz_absolute_covariates_pairs", (DL_FUNC) &xyz_absolute_covariates_pairs, 3},
-    {"xyz_clean_pairs", (DL_FUNC) &xyz_clean_pairs, 1},
     {"xyz_translate_to_binary", (DL_FUNC) &xyz_translate_to_binary, 2},
     {"xyz_estimate_background_interaction_frequency", (DL_FUNC) &xyz_estimate_background_interaction_frequency, 3},
     {"xyz_find_strongest_pairs", (DL_FUNC) &xyz_find_strongest_pairs, 4},
