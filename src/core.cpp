@@ -1,20 +1,12 @@
 #include <Rcpp.h>
+#include <numeric>
+#include <utility>
 
 //[[Rcpp::plugins(cpp11)]]
 
 using namespace Rcpp;
 
-typedef std::pair<double, int> paired_doubleint;
-
-bool cmp_double_smaller(paired_doubleint left, paired_doubleint right) {
-  return left.first < right.first;
-}
-
-bool cmp_double_bigger(paired_doubleint left, paired_doubleint right) {
-  return left.first > right.first;
-}
-
-int round_to_int(double x) {
+inline int round_to_int(double x) {
   int result = 0;
   if(x > 0) x += 0.5;
   if(x < 0) x -= 0.5;
@@ -23,51 +15,61 @@ int round_to_int(double x) {
 }
 
 /* order (ascending) function for IntegerVector */
-//[[Rcpp::export]]
-IntegerVector order_vector(NumericVector x, bool decreasing) {
-    int n = x.size();
-    std::vector<paired_doubleint> pairs;
-    pairs.reserve(n);
+template<class T, bool decreasing>
+class idx_comparator {
+};
 
-    for(int i = 0; i < n; ++i) pairs.push_back(std::make_pair(x[i], i));
+template<class T>
+class idx_comparator<T, true>{
+  const T &x;
+public:
+  idx_comparator(const T &x):  x(x) {};
 
-    if (decreasing) {
-      std::sort(pairs.begin(), pairs.end(), cmp_double_bigger);
-    } else {
-      std::sort(pairs.begin(), pairs.end(), cmp_double_smaller);
-    }
-    IntegerVector result(n);
+  inline bool operator()(int a, int b){
+    return x[a] > x[b];
+  }
+};
 
-    for(int i = 0; i < n; ++i) result[i] = pairs[i].second;
+template<class T>
+class idx_comparator<T, false>{
+  const T &x;
+public:
+  idx_comparator(const T &x):  x(x) {};
 
-    return result;
-}
+  inline bool operator()(int a, int b){
+    return x[a] < x[b];
+  }
+};
 
-/* sort NumericVector using an already computed order */
-//[[Rcpp::export]]
-void sort_using_order_numvec(NumericVector x, const IntegerVector& x_o) {
-    NumericVector temp(x.size());
-    for(int i = 0; i < x.size(); ++i) temp[i] = x[x_o[i]];
+template<bool decreasing, class T>
+inline IntegerVector order_vector(T x) {
+  IntegerVector result(x.size());
+  std::iota(result.begin(), result.end(), 0);
 
-    for(int i = 0; i < x.size(); ++i) x[i] = temp[i];
+  std::sort(result.begin(), result.end(),
+            idx_comparator<T, decreasing>(x));
+
+  return result;
 }
 
 /* sort PairMatrix using an already computed order */
-//[[Rcpp::export]]
-void sort_using_order_intmat(IntegerMatrix x, const IntegerVector x_o) {
-    IntegerMatrix temp(2,x.ncol());
-    for(int i = 0; i < x.ncol(); ++i) { temp(0,i) = x(0,x_o[i]); temp(1,i) = x(1,x_o[i]); }
-
-    for(int i = 0; i < x.ncol(); ++i) { x(0,i) = temp(0,i); x(1,i) = temp(1,i); }
+inline void sort_using_order_intmat(IntegerMatrix &x, const IntegerVector &x_o) {
+  // Consider using std::swap as in https://stackoverflow.com/a/838789/5861244
+  int n = x.nrow(), p = x.ncol();
+  for(int i = 0; i < n; ++i){
+    IntegerVector temp = x(i, _);
+    auto x_o_it = x_o.begin();
+    for(int j = 0; j < p; ++j, ++x_o_it)
+      x[i + j * n] = temp[*x_o_it];
+  }
 }
 
+inline IntegerVector sample_uniform(int range, int n) {
+    if(range < 1)
+      stop("range is zero or negative");
 
-
-//[[Rcpp::export]]
-IntegerVector sample_uniform(int range, int n) {
-    if(range < 1)  stop("range is zero or negative");
-
-    if(n < 1)  stop("number of samples is zero or negative");
+    if(n < 1)
+      stop("number of samples is zero or negative");
     NumericVector temp = runif(n,-0.499,range-0.501);
     IntegerVector results(n);
 
@@ -165,62 +167,75 @@ IntegerVector sample_int_replace(NumericVector probabilities, int n) {
 }
 
 /* entrywise multiplication of X and Y */
-//[[Rcpp::export]]
-NumericMatrix prod_matrix_vector(IntegerMatrix X, NumericVector r) {
-    int n = X.nrow(); int p = X.ncol(); NumericMatrix result(n,p);
+inline NumericMatrix prod_matrix_vector(const IntegerMatrix &X, const NumericVector &r) {
+  int n = X.nrow(); int p = X.ncol();
+  NumericMatrix result = Rcpp::as<Rcpp::NumericMatrix>(X);
+  double *it_res = &result(0,0);
+  for(int j = 0; j < p; ++j)
+    for(int i = 0; i < n; ++i, ++it_res)
+      *it_res *= r[i];
 
-    for(int j = 0; j < p; ++j) {
-      for(int i = 0; i < n; ++i) {
-        result(i,j)=X(i,j)*r[i];
-        }
-    }
 
-    return result;
+  /* if this is a major burden then consider to change X to X^Top and use
+   * the following with #include <R_ext/BLAS.h>
+   int n = X.nrow();
+   int INCX = 1;
+   NumericMatrix result = Rcpp::as<Rcpp::NumericMatrix>(X);
+
+   auto result_it = result.begin();
+   for(auto r_it = r.begin(); r_it != r.end(); ++r_it){
+   // http://www.netlib.org/lapack/explore-html/de/da4/group__double__blas__level1_ga793bdd0739bbd0e0ec8655a0df08981a.html#ga793bdd0739bbd0e0ec8655a0df08981a
+   F77_CALL(dscal)(&n, &*r_it, &*result_it, &INCX);
+   result_it += n;
+   }
+   */
+
+  return result;
 }
 
 /* sum over columns of matrix for specific indexes */
-//[[Rcpp::export]]
-NumericVector colsum_index(NumericMatrix X,IntegerVector indexes) {
-    int p = X.ncol();
-    NumericVector result(p);
-    double temp = 0.0;
-    for(int i = 0; i < p; ++i) {
-        temp = 0.0;
-        for(int j = 0; j < indexes.size(); ++j) {
-            temp += X(indexes[j],i);
-        }
-        result[i] = temp;
-    }
-    return result;
+inline NumericVector colsum_index(NumericMatrix X,IntegerVector indexes) {
+  int p = X.ncol();
+  int n = X.nrow();
+  int n_idx = indexes.size();
+  NumericVector result(p);
+
+  double *it_X = X.begin();
+  double *it_res = result.begin();
+  for(int i = 0; i < p; ++i, it_X += n, ++it_res){
+    int *it_idx = indexes.begin();
+    for(int j = 0; j < n_idx; ++j, ++it_idx)
+      *it_res += *(it_X + *it_idx);
+  }
+  return result;
 }
 
-//
-void copy_vector_to_column(NumericMatrix X, NumericVector Y, int k) {
-    for (int i = 0; i < X.nrow(); ++i) {
-        X(i,k)=Y[i];
-    }
+
+inline void copy_vector_to_column(NumericMatrix X, NumericVector Y, int k){
+  X(_,k) = Y;
 }
+
 
 /* sum over columns of matrix for specific indexes */
-//[[Rcpp::export]]
-NumericVector absolute_covariates(NumericMatrix X, NumericVector Y) {
+inline NumericVector absolute_covariates(NumericMatrix X, NumericVector Y) {
     int p = X.ncol();
     int n = X.nrow();
+
     NumericVector abs_cov(p);
 
-    double temp = 0.0;
-    for (int l = 0; l < p; ++l) {
-        temp = 0.0;
-        for (int i = 0; i < n; ++i) {
-            temp += X(i,l)*Y[i];
-        }
-        abs_cov[l]=std::abs(temp)/n;
+    double *it_X = X.begin();
+    double *it_abs_cov = abs_cov.begin();
+    for (int l = 0; l < p; ++l, ++it_abs_cov) {
+      double *it_Y = Y.begin();
+      for (int i = 0; i < n; ++i, ++it_X, ++it_Y) {
+          *it_abs_cov += *it_X * *it_Y;
+      }
+      *it_abs_cov = std::abs(*it_abs_cov)/n;
     }
     return abs_cov;
 }
 
-//[[Rcpp::export]]
-NumericVector absolute_covariates_pairs(IntegerMatrix pairs, NumericMatrix X, NumericVector Y) {
+inline NumericVector absolute_covariates_pairs(IntegerMatrix pairs, NumericMatrix X, NumericVector Y) {
     int n = X.nrow();
 
     int nr_pairs = pairs.ncol();
@@ -228,13 +243,13 @@ NumericVector absolute_covariates_pairs(IntegerMatrix pairs, NumericMatrix X, Nu
 
     int l = 0;
     int k = 0;
-    double temp = 0.0;
     for(int j = 0; j < nr_pairs; ++j) {
       l = pairs(0,j);
       k = pairs(1,j);
-      temp = 0.0;
-      for(int i = 0; i < n; ++i) {
-          temp += Y[i]*X(i,l)*X(i,k);
+      double temp = 0.0;
+      double *X_l = &X(0,l), *X_k = &X(0,k);
+      for(int i = 0; i < n; ++i, ++X_l, ++X_k) {
+          temp += Y[i] * *X_l * *X_k;
       }
       abs_cov[j]=std::abs(temp)/n;
     }
@@ -244,7 +259,7 @@ NumericVector absolute_covariates_pairs(IntegerMatrix pairs, NumericMatrix X, Nu
 
 typedef std::pair<int, int> paired_int;
 
-bool cmp_paired_int(paired_int left, paired_int right) {
+inline bool cmp_paired_int(paired_int left, paired_int right) {
   if(left.first < right.first) return true;
 
   if(left.first == right.first) {
@@ -256,8 +271,7 @@ bool cmp_paired_int(paired_int left, paired_int right) {
 }
 
 /* order (ascending) function for IntegerVector */
-//[[Rcpp::export]]
-IntegerMatrix clean_pairs(IntegerMatrix pairs) {
+inline IntegerMatrix clean_pairs(IntegerMatrix pairs) {
     int n_pairs = pairs.ncol();
 
     if(n_pairs == 1) return pairs;
@@ -277,7 +291,8 @@ IntegerMatrix clean_pairs(IntegerMatrix pairs) {
     pairs1.erase(std::unique(pairs1.begin(), pairs1.end()), pairs1.end());
 
     IntegerMatrix result(2,pairs1.size());
-    for(int i = 0; i < result.ncol(); ++i) {
+    int p = result.ncol();
+    for(int i = 0; i < p; ++i) {
         result(0,i) = pairs1[i].first;
         result(1,i) = pairs1[i].second;
     }
@@ -404,7 +419,7 @@ List find_strongest_pairs(List pairs, NumericMatrix X, NumericVector Y, int max_
   for(int m = 0; m < size_of_list; ++m) {
     IntegerMatrix tempp = pairs(m);
     temps = absolute_covariates_pairs(tempp,X,Y);
-    otemps = order_vector(temps,true);
+    otemps = order_vector<true>(temps);
     sort_using_order_intmat(tempp,otemps);
     for(int j = 0; j <  std::min(max_number_of_pairs,tempp.ncol()); ++j) {
       temp_pairs(0,counter) = tempp(0,j);
@@ -422,7 +437,7 @@ List find_strongest_pairs(List pairs, NumericMatrix X, NumericVector Y, int max_
   temp_pairs = clean_pairs(tpairs);
 
   temp_strength = absolute_covariates_pairs(temp_pairs,X,Y);
-  otemps = order_vector(temp_strength,true);
+  otemps = order_vector<true>(temp_strength);
   sort_using_order_intmat(temp_pairs,otemps);
 
   int length = std::min(max_number_of_pairs,(int) temp_strength.size());
@@ -441,7 +456,9 @@ List find_strongest_pairs(List pairs, NumericMatrix X, NumericVector Y, int max_
 }
 
 //[[Rcpp::export]]
-IntegerMatrix equalpairs(NumericVector u, NumericVector v, IntegerVector ou, IntegerVector ov, int max_number_of_pairs) {
+IntegerMatrix equalpairs(
+    NumericVector u, NumericVector v, IntegerVector ou,
+    IntegerVector ov, int max_number_of_pairs) {
     //set sizes of array
     int nu = u.size();
     int nv = v.size();
@@ -556,8 +573,8 @@ List projected_equal_pairs(IntegerMatrix X, NumericVector Y, int number_of_runs,
         z = colsum_index(Xr,indexes);
 
 
-        order_x = order_vector(x,false);
-        order_z = order_vector(z,false);
+        order_x = order_vector<false>(x);
+        order_z = order_vector<false>(z);
 
         x.sort();
         z.sort();
@@ -597,7 +614,7 @@ List naive_interaction_search(NumericMatrix X, NumericVector Y, int max_number_o
       ++count;
     }
   }
-  IntegerVector order_pairs = order_vector(strength,true);
+  IntegerVector order_pairs = order_vector<true>(strength);
   sort_using_order_intmat(pairs,order_pairs);
   strength = strength[order_pairs];
   List result(2);
@@ -695,7 +712,7 @@ bool scan_main_effects(const NumericMatrix &X, const NumericVector &Y, const Num
     }
 
     NumericVector covs = absolute_covariates(X,residuals);
-    IntegerVector order_covs = order_vector(covs,true);
+    IntegerVector order_covs = order_vector<true>(covs);
 
     double threshold = alpha*lambdas[r];
 

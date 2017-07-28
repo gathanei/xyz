@@ -40,4 +40,3 @@ print(result)
 \references{
 G. Thanei, N. Meinshausen and R. Shah (2016). The xyz algorithm for fast interaction search in high-dimensional data. <https://arxiv.org/pdf/1610.05108v1.pdf>
 }
-
