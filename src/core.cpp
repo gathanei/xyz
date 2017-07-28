@@ -17,7 +17,6 @@ inline int round_to_int(double x) {
 /* order (ascending) function for IntegerVector */
 template<class T, bool decreasing>
 class idx_comparator {
-
 };
 
 template<class T>
@@ -42,17 +41,13 @@ public:
   }
 };
 
-template<class T>
-inline IntegerVector order_vector(T x, bool decreasing) {
+template<bool decreasing, class T>
+inline IntegerVector order_vector(T x) {
   IntegerVector result(x.size());
   std::iota(result.begin(), result.end(), 0);
-  if(decreasing){
-    auto comparator = [&x](int a, int b){ return x[a] > x[b]; };
-    std::sort(result.begin(), result.end(), comparator);
-  } else{
-    auto comparator = [&x](int a, int b){ return x[a] < x[b]; };
-    std::sort(result.begin(), result.end(), comparator);
-  }
+
+  std::sort(result.begin(), result.end(),
+            idx_comparator<T, decreasing>(x));
 
   return result;
 }
@@ -202,13 +197,14 @@ inline NumericMatrix prod_matrix_vector(const IntegerMatrix &X, const NumericVec
 inline NumericVector colsum_index(NumericMatrix X,IntegerVector indexes) {
   int p = X.ncol();
   int n = X.nrow();
+  int n_idx = indexes.size();
   NumericVector result(p);
 
   double *it_X = X.begin();
   double *it_res = result.begin();
   for(int i = 0; i < p; ++i, it_X += n, ++it_res){
     int *it_idx = indexes.begin();
-    for(int j = 0; j < indexes.size(); ++j, ++it_idx)
+    for(int j = 0; j < n_idx; ++j, ++it_idx)
       *it_res += *(it_X + *it_idx);
   }
   return result;
@@ -423,7 +419,7 @@ List find_strongest_pairs(List pairs, NumericMatrix X, NumericVector Y, int max_
   for(int m = 0; m < size_of_list; ++m) {
     IntegerMatrix tempp = pairs(m);
     temps = absolute_covariates_pairs(tempp,X,Y);
-    otemps = order_vector(temps,true);
+    otemps = order_vector<true>(temps);
     sort_using_order_intmat(tempp,otemps);
     for(int j = 0; j <  std::min(max_number_of_pairs,tempp.ncol()); ++j) {
       temp_pairs(0,counter) = tempp(0,j);
@@ -441,7 +437,7 @@ List find_strongest_pairs(List pairs, NumericMatrix X, NumericVector Y, int max_
   temp_pairs = clean_pairs(tpairs);
 
   temp_strength = absolute_covariates_pairs(temp_pairs,X,Y);
-  otemps = order_vector(temp_strength,true);
+  otemps = order_vector<true>(temp_strength);
   sort_using_order_intmat(temp_pairs,otemps);
 
   int length = std::min(max_number_of_pairs,(int) temp_strength.size());
@@ -577,8 +573,8 @@ List projected_equal_pairs(IntegerMatrix X, NumericVector Y, int number_of_runs,
         z = colsum_index(Xr,indexes);
 
 
-        order_x = order_vector(x,false);
-        order_z = order_vector(z,false);
+        order_x = order_vector<false>(x);
+        order_z = order_vector<false>(z);
 
         x.sort();
         z.sort();
@@ -618,7 +614,7 @@ List naive_interaction_search(NumericMatrix X, NumericVector Y, int max_number_o
       ++count;
     }
   }
-  IntegerVector order_pairs = order_vector(strength,true);
+  IntegerVector order_pairs = order_vector<true>(strength);
   sort_using_order_intmat(pairs,order_pairs);
   strength = strength[order_pairs];
   List result(2);
@@ -716,7 +712,7 @@ bool scan_main_effects(const NumericMatrix &X, const NumericVector &Y, const Num
     }
 
     NumericVector covs = absolute_covariates(X,residuals);
-    IntegerVector order_covs = order_vector(covs,true);
+    IntegerVector order_covs = order_vector<true>(covs);
 
     double threshold = alpha*lambdas[r];
 
